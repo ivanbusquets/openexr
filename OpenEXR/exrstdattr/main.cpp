@@ -2,9 +2,9 @@
 //
 // Copyright (c) 2012, Industrial Light & Magic, a division of Lucas
 // Digital Ltd. LLC
-// 
+//
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -16,8 +16,8 @@
 // distribution.
 // *       Neither the name of Industrial Light & Magic nor the names of
 // its contributors may be used to endorse or promote products derived
-// from this software without specific prior written permission. 
-// 
+// from this software without specific prior written permission.
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -45,6 +45,7 @@
 #include <ImfMultiPartOutputFile.h>
 #include <ImfStandardAttributes.h>
 #include <ImfVecAttribute.h>
+#include <ImfBoxAttribute.h>
 #include <ImfIntAttribute.h>
 #include <ImfTiledInputPart.h>
 #include <ImfTiledOutputPart.h>
@@ -198,6 +199,16 @@ usageMessage (const char argv0[], bool verbose = false)
         "  -pixelAspectRatio f\n"
         "        width divided by height of a pixel\n"
         "        (float, >= 0)\n"
+        "\n"
+        "  -displayWindow i i i i\n"
+        "        display Window\n"
+        "        (4 ints, x y r t)\n"
+        "\n"
+        "  -dataWindow i i i i\n"
+        "        data Window\n"
+        "        (4 ints, x y r t)\n"
+        "        (r-x = width of original dataWindow)\n"
+        "        (t-y = height of original dataWindow)\n"
         "\n"
         "  -screenWindowWidth f\n"
         "        width of the screen window (float, >= 0)\n"
@@ -410,6 +421,30 @@ getV2f (const char attrName[],
 
     attrs[attrName] = new V2fAttribute (v);
     i += 3;
+}
+
+
+void
+getBox2i (const char attrName[],
+            int argc,
+            char **argv,
+            int &i,
+            AttrMap &attrs)
+{
+    if (i > argc - 5)
+        usageMessage (argv[0]);
+
+    //Box2iAttribute *a = new Box2iAttribute;
+    //attrs[attrName] = a;
+
+    Vec2<int> vmin (strtol (argv[i + 1], 0, 0), strtol (argv[i + 2], 0, 0) );
+    Vec2<int> vmax (strtol (argv[i + 3], 0, 0), strtol (argv[i + 4], 0, 0) );
+
+    Box2i b (vmin, vmax);
+
+    Box2iAttribute *a = new Box2iAttribute(b);
+    attrs[attrName] = a;
+    i += 5;
 }
 
 
@@ -731,6 +766,14 @@ main(int argc, char **argv)
             else if (!strcmp (argv[i], "-wrapmodes"))
             {
                 getString (attrName, argc, argv, i, attrs);
+            }
+            else if (!strcmp (argv[i], "-displayWindow"))
+            {
+                getBox2i (attrName, argc, argv, i, attrs);
+            }
+            else if (!strcmp (argv[i], "-dataWindow"))
+            {
+                getBox2i (attrName, argc, argv, i, attrs);
             }
             else if (!strcmp (argv[i], "-pixelAspectRatio"))
             {
